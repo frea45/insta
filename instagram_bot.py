@@ -29,10 +29,7 @@ async def handle_message(client: Client, message: Message):
                 sent = await client.send_photo(
                     chat_id=LOG_CHANNEL,
                     photo=response.content,
-                    caption=f"پروفایل از @{username}
-
-bio:
-{bio}"
+                    caption=f"پروفایل از @{username}\nbio:{bio}"
                 )
                 await sent.copy(chat_id=message.chat.id)
             else:
