@@ -1,99 +1,99 @@
-from pyrogram import Client, filters
-from pyrogram.types import Message
-from config import Config
-
-import instaloader
 import os
 import tempfile
+import instaloader
 import requests
-import os
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 proxies = {
-    "http": os.environ.get("HTTP_PROXY", headers=headers, proxies=proxies),
-    "https": os.environ.get("HTTP_PROXY", headers=headers, proxies=proxies)
+    "http": "http://138.2.86.126:80",
+    "https": "http://138.2.86.126:80"
 }
+
 headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64, headers=headers, proxies=proxies) AppleWebKit/537.36 (KHTML, like Gecko, headers=headers, proxies=proxies) Chrome/117.0.0.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
 }
 
+app = Client("insta", api_id=int(os.environ.get("API_ID")), api_hash=os.environ.get("API_HASH"), bot_token=os.environ.get("BOT_TOKEN"))
 
+LOG_CHANNEL = -1001792962793
 
+@app.on_message(filters.command("start") & filters.private)
+async def start(client: Client, message: Message):
+    await message.reply("سلام! یوزرنیم یا لینک اینستاگرام رو بفرست تا برات دانلود کنم.")
 
-app = Client(
-    "instagram_bot",
-    api_id=Config.API_ID,
-    api_hash=Config.API_HASH,
-    bot_token=Config.BOT_TOKEN
-, headers=headers, proxies=proxies)
-loader = instaloader.Instaloader(
-    dirname_pattern=tempfile.gettempdir(),
-    download_videos=False,
-    download_video_thumbnails=False,
-    download_comments=False,
-    save_metadata=False,
-    compress_json=False
-), download_videos=False,
-                                 download_video_thumbnails=False, download_comments=False,
-                                 save_metadata=False, compress_json=False), download_videos=False,
-                                 download_video_thumbnails=False, download_comments=False,
-                                 save_metadata=False, compress_json=False, headers=headers, proxies=proxies)
+@app.on_message(filters.private & filters.text)
+async def handle_instagram(client: Client, message: Message):
+    text = message.text.strip()
 
-@app.on_message(filters.private & filters.text, headers=headers, proxies=proxies)
-async def handle_message(client: Client, message: Message, headers=headers, proxies=proxies):
-    text = message.text.strip(, headers=headers, proxies=proxies)
-
-    if text.startswith("@", headers=headers, proxies=proxies):
+    if text.startswith("@"):
         username = text[1:]
         try:
-            profile = instaloader.Profile.from_username(loader.context, username, headers=headers, proxies=proxies)
-            bio = profile.biography
-            profile_pic_url = profile.profile_pic_url
+            url = f"https://i.instagram.com/api/v1/users/web_profile_info/?username={username}"
+            resp = requests.get(url, headers=headers, proxies=proxies)
+            data = resp.json()
+            profile_pic_url = data["data"]["user"]["profile_pic_url_hd"]
+            full_name = data["data"]["user"]["full_name"]
+            bio = data["data"]["user"]["biography"]
+            followers = data["data"]["user"]["edge_followed_by"]["count"]
+            following = data["data"]["user"]["edge_follow"]["count"]
 
-            response = requests.get(profile_pic_url, headers=headers, proxies=proxies)
-            if response.ok:
-                sent = await client.send_photo(
-                    chat_id=LOG_CHANNEL,
-                    photo=response.content,
-                    caption=f"پروفایل از @{username}\nbio:{bio}"
-                , headers=headers, proxies=proxies)
-                await sent.copy(chat_id=message.chat.id, headers=headers, proxies=proxies)
-            else:
-                await message.reply("دانلود عکس پروفایل انجام نشد.", headers=headers, proxies=proxies)
+            caption = f"👤 {full_name}\n\n{bio}\n\n👥 دنبال‌کننده: {followers}\n▶️ دنبال‌شونده: {following}"
+
+            downloaded = requests.get(profile_pic_url, proxies=proxies)
+            photo_path = os.path.join(tempfile.gettempdir(), f"{username}.jpg")
+            with open(photo_path, "wb") as f:
+                f.write(downloaded.content)
+
+            await client.send_photo(message.chat.id, photo=photo_path, caption=caption)
+            await client.send_photo(LOG_CHANNEL, photo=photo_path, caption=f"Profile: @{username}")
+
+            os.remove(photo_path)
+
         except Exception as e:
-            await message.reply(f"خطا در دریافت اطلاعات پروفایل: {e}", headers=headers, proxies=proxies)
-    elif "instagram.com/reel/" in text:
-        await handle_instagram_media(client, message, text, headers=headers, proxies=proxies)
-    elif "instagram.com/p/" in text:
-        await handle_instagram_media(client, message, text, headers=headers, proxies=proxies)
-    else:
-        await message.reply("فرمت ورودی نادرست است.", headers=headers, proxies=proxies)
+            await message.reply(f"خطا در دریافت اطلاعات پروفایل: {e}")
 
-async def handle_instagram_media(client, message, url, headers=headers, proxies=proxies):
-    try:
-        with tempfile.TemporaryDirectory(, headers=headers, proxies=proxies) as tmpdir:
+    elif "instagram.com" in text:
+        try:
             loader = instaloader.Instaloader(
-    dirname_pattern=tempfile.gettempdir(),
-    download_videos=False,
-    download_video_thumbnails=False,
-    download_comments=False,
-    save_metadata=False,
-    compress_json=False
-), download_videos=False,
-                                 download_video_thumbnails=False, download_comments=False,
-                                 save_metadata=False, compress_json=False)
+                dirname_pattern=tempfile.gettempdir(),
+                download_videos=False,
+                download_video_thumbnails=False,
+                download_comments=False,
+                save_metadata=False,
+                compress_json=False
+            )
 
-            post = instaloader.Post.from_shortcode(loader.context, url.split("/", headers=headers, proxies=proxies)os.makedirs("insta", exist_ok=True)
-[-2], headers=headers, proxies=proxies)
-            loader.download_post(post, target=post.owner_username, headers=headers, proxies=proxies)
+            shortcode = text.split("/")[-2]
+            post = instaloader.Post.from_shortcode(loader.context, shortcode)
 
-            for file in os.listdir(tmpdir, headers=headers, proxies=proxies):
-                if file.endswith((".jpg", ".mp4", headers=headers, proxies=proxies), headers=headers, proxies=proxies):
-                    file_path = os.path.join(tmpdir, file, headers=headers, proxies=proxies)
-                    with open(file_path, "rb", headers=headers, proxies=proxies) as f:
-                        if file.endswith(".jpg", headers=headers, proxies=proxies):
-                            sent = await client.send_photo(LOG_CHANNEL, f, headers=headers, proxies=proxies)
-                        else:
-                            sent = await client.send_video(LOG_CHANNEL, f, headers=headers, proxies=proxies)
-                        await sent.copy(chat_id=message.chat.id, headers=headers, proxies=proxies)
-    except Exception as e:
-        await message.reply(f"خطا در دریافت پست: {e}", headers=headers, proxies=proxies)
+            os.makedirs("insta", exist_ok=True)
+            loader.download_post(post, target="insta")
+
+            file_paths = []
+            for file in os.listdir("insta"):
+                if file.endswith(".jpg") or file.endswith(".mp4"):
+                    file_paths.append(os.path.join("insta", file))
+
+            if file_paths:
+                for path in file_paths:
+                    if path.endswith(".jpg"):
+                        await client.send_photo(message.chat.id, photo=path)
+                        await client.send_photo(LOG_CHANNEL, photo=path)
+                    else:
+                        await client.send_video(message.chat.id, video=path)
+                        await client.send_video(LOG_CHANNEL, video=path)
+
+            # پاکسازی
+            for file in os.listdir("insta"):
+                os.remove(os.path.join("insta", file))
+            os.rmdir("insta")
+
+        except Exception as e:
+            await message.reply(f"خطا در دریافت پست: {e}")
+
+    else:
+        await message.reply("فرمت ورودی اشتباهه. یوزرنیم با @ یا لینک پست بفرست.")
+
+if __name__ == "__main__":
+    app.run()
