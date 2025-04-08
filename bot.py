@@ -5,7 +5,12 @@ import asyncio
 
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from config import API_ID, API_HASH, BOT_TOKEN, LOG_CHANNEL, PROXY
+
+# تنظیمات ربات
+API_ID = 3335796  # جایگزین کن با api_id خودت
+API_HASH = "138b992a0e672e8346d8439c3f42ea78"
+BOT_TOKEN = "7136875110:AAFzyr2i2FbRrmst1sklkJPN7Yz2rXJvSew"
+LOG_CHANNEL = -1001792962793  # آیدی عددی کانال لاگ
 
 app = Client("insta-bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
@@ -13,8 +18,6 @@ def download_post(url_or_username):
     with tempfile.TemporaryDirectory() as tempdir:
         loader = instaloader.Instaloader(dirname_pattern=tempdir, download_videos=True, download_video_thumbnails=False,
                                          download_comments=False, save_metadata=False, compress_json=False)
-        if PROXY:
-            loader.context._session.proxies = PROXY
 
         if url_or_username.startswith("http"):
             shortcode = url_or_username.split("/")[-2]
@@ -28,10 +31,8 @@ def download_post(url_or_username):
         files = []
         for root, _, filenames in os.walk(tempdir):
             for f in filenames:
-                path = os.path.join(root, f)
                 if f.endswith((".jpg", ".mp4")):
-                    files.append(path)
-
+                    files.append(os.path.join(root, f))
         return files
 
 @app.on_message(filters.command("start"))
@@ -45,14 +46,12 @@ async def handle_instagram(client, message: Message):
         await message.reply("در حال دریافت اطلاعات... لطفاً صبر کنید.")
         files = download_post(text)
         if not files:
-            await message.reply("فایلی یافت نشد.")
+            await message.reply("هیچ فایلی پیدا نشد.")
             return
-
         for file in files:
             await client.send_document(chat_id=LOG_CHANNEL, document=file, caption=f"درخواست از: {message.from_user.mention}")
             await message.reply_document(file)
             os.remove(file)
-
     except Exception as e:
         await message.reply(f"خطا در پردازش: {e}")
 
