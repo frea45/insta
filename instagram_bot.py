@@ -24,9 +24,13 @@ async def start(client: Client, message: Message):
 
 @app.on_message(filters.private & filters.text)
 async def handle_instagram(client: Client, message: Message):
+    print("handle_instagram called")
+    print("Received text:", message.text)
+
     text = message.text.strip()
 
     if text.startswith("@"):
+        print("Detected username input")
         username = text[1:]
         try:
             url = f"https://i.instagram.com/api/v1/users/web_profile_info/?username={username}"
@@ -51,9 +55,11 @@ async def handle_instagram(client: Client, message: Message):
             os.remove(photo_path)
 
         except Exception as e:
+            print("Error occurred:", e)
             await message.reply(f"خطا در دریافت اطلاعات پروفایل: {e}")
 
     elif "instagram.com" in text:
+        print("Detected Instagram link")
         try:
             loader = instaloader.Instaloader(
                 dirname_pattern=tempfile.gettempdir(),
@@ -84,12 +90,12 @@ async def handle_instagram(client: Client, message: Message):
                         await client.send_video(message.chat.id, video=path)
                         await client.send_video(LOG_CHANNEL, video=path)
 
-            # پاکسازی
             for file in os.listdir("insta"):
                 os.remove(os.path.join("insta", file))
             os.rmdir("insta")
 
         except Exception as e:
+            print("Error occurred:", e)
             await message.reply(f"خطا در دریافت پست: {e}")
 
     else:
