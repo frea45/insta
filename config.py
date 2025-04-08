@@ -1,5 +1,0 @@
-API_ID =  
-API_HASH = 
-BOT_TOKEN = 
-LOG_CHANNEL = 
-ADMIN_ID =  
