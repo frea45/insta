@@ -1,12 +1,17 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from config import API_ID, API_HASH, BOT_TOKEN, LOG_CHANNEL
+#from config import API_ID, API_HASH, BOT_TOKEN, LOG_CHANNEL
 
 import instaloader
 import os
 import tempfile
 import requests
 
+API_ID = 3335796 
+API_HASH = 138B992A0E672E8346D8439C3F42EA78 
+BOT_TOKEN = 5088657122:AAEPiacGAxa-9fQ19keruQua74tf2-Ljktk
+ADMIN_ID = 763990585 
+LOG_CHANNEL = -1001792962793
 app = Client("instagram_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 loader = instaloader.Instaloader(dirname_pattern=tempfile.gettempdir(), download_videos=False,
