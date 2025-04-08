@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from config import *
+from config import Config
 
 import instaloader
 import os
